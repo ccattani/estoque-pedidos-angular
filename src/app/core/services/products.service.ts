@@ -1,72 +1,34 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
+import { DB } from '../data/in-memory-db';
+import { uid } from '../utils/id';
 import { Produto } from '../models/produto.model';
-import { productCreateSchema, productUpdateSchema } from '../validation/schemas';
-import { parseOrThrow } from '../validation/validate';
 
 @Injectable({ providedIn: 'root' })
 export class ProductsService {
-  private readonly baseUrl = '/api/products';
-  private readonly _products$ = new BehaviorSubject<Produto[]>([]);
+  private readonly _products$ = new BehaviorSubject<Produto[]>(structuredClone(DB.products));
   readonly products$ = this._products$.asObservable();
-
-  constructor(private http: HttpClient) {
-    this.refresh().subscribe();
-  }
 
   get snapshot(): Produto[] {
     return this._products$.value;
   }
 
-  // GET /products
-  list(): Observable<Produto[]> {
-    return this.http.get<Produto[]>(this.baseUrl);
+  getById(id: string): Produto | undefined {
+    return this.snapshot.find(p => p.id === id);
   }
 
-  // GET /products/:id
-  getById(id: string): Observable<Produto> {
-    return this.http.get<Produto>(`${this.baseUrl}/${id}`);
+  create(input: Omit<Produto, 'id' | 'createdAt'>) {
+    const product: Produto = { ...input, id: uid(), createdAt: new Date().toISOString() };
+    this._products$.next([product, ...this.snapshot]);
+    return product;
   }
 
-  // POST /products
-  create(input: Omit<Produto, 'id' | 'createdAt'>): Observable<Produto> {
-    const payload = parseOrThrow(productCreateSchema, input);
-    return this.http.post<Produto>(this.baseUrl, payload).pipe(
-      tap(product => {
-        this._products$.next([product, ...this.snapshot]);
-      })
-    );
+  update(id: string, patch: Partial<Omit<Produto, 'id' | 'createdAt'>>) {
+    const next = this.snapshot.map(p => (p.id === id ? { ...p, ...patch } : p));
+    this._products$.next(next);
   }
 
-  // PUT /products/:id
-  update(
-    id: string,
-    patch: Partial<Omit<Produto, 'id' | 'createdAt'>>
-  ): Observable<Produto> {
-    const payload = parseOrThrow(productUpdateSchema, patch);
-    return this.http.put<Produto>(`${this.baseUrl}/${id}`, payload).pipe(
-      tap(product => {
-        const next = this.snapshot.map(p => (p.id === id ? product : p));
-        this._products$.next(next);
-      })
-    );
-  }
-
-  // DELETE /products/:id
-  remove(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/${id}`).pipe(
-      tap(() => {
-        this._products$.next(this.snapshot.filter(p => p.id !== id));
-      })
-    );
-  }
-
-  refresh(): Observable<Produto[]> {
-    return this.list().pipe(
-      tap(products => {
-        this._products$.next(products);
-      })
-    );
+  remove(id: string) {
+    this._products$.next(this.snapshot.filter(p => p.id !== id));
   }
 }
