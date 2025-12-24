@@ -40,7 +40,8 @@ export class ProductsListComponent {
   constructor(private productsService: ProductsService) {
     // manter sincronizado com BehaviorSubject
     this.productsService.products$.subscribe(ps => this.products.set(ps));
-    this.productsService.refresh().subscribe();
+    // preencher com snapshot inicial após injeção
+    this.products.set(this.productsService.snapshot);
   }
 
   isLowStock(p: Produto) {
@@ -48,6 +49,6 @@ export class ProductsListComponent {
   }
 
   remove(id: string) {
-    this.productsService.remove(id).subscribe();
+    this.productsService.remove(id);
   }
 }

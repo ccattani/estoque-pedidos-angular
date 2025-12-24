@@ -20,7 +20,7 @@ export class MovementsListComponent {
   private productsService = inject(ProductsService);
   private toast = inject(ToastService);
 
-  products = signal<Produto[]>([]);
+  products = signal<Produto[]>(this.productsService.snapshot);
   movements = signal<Movement[]>([]);
   showForm = signal(false);
 
@@ -47,8 +47,6 @@ export class MovementsListComponent {
     });
 
     this.inventory.movements$.subscribe(ms => this.movements.set(ms));
-    this.productsService.refresh().subscribe();
-    this.inventory.refresh().subscribe();
   }
 
   open() {
@@ -84,31 +82,28 @@ export class MovementsListComponent {
       return;
     }
 
-    this.inventory
-      .registerMovement({
+    try {
+      this.inventory.register({
         productId: v.productId,
         type: v.type,
         qty: Number(v.qty),
         reason: v.reason.trim(),
-      })
-      .subscribe({
-        next: () => {
-          const p = this.productsMap().get(v.productId);
-          const name = p?.name ?? 'Produto';
-
-          const msg =
-            v.type === 'IN'
-              ? `Entrada registrada para ${name}.`
-              : v.type === 'OUT'
-              ? `Saída registrada para ${name}.`
-              : `Estoque ajustado para ${name}.`;
-
-          this.toast.show(msg, 'success');
-          this.close();
-        },
-        error: (e: any) => {
-          this.toast.show(e?.message ?? 'Erro ao registrar movimentação.', 'error');
-        },
       });
+
+      const p = this.productsMap().get(v.productId);
+      const name = p?.name ?? 'Produto';
+
+      const msg =
+        v.type === 'IN'
+          ? `Entrada registrada para ${name}.`
+          : v.type === 'OUT'
+          ? `Saída registrada para ${name}.`
+          : `Estoque ajustado para ${name}.`;
+
+      this.toast.show(msg, 'success');
+      this.close();
+    } catch (e: any) {
+      this.toast.show(e?.message ?? 'Erro ao registrar movimentação.', 'error');
+    }
   }
 }

@@ -1,51 +1,34 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import { Movement } from '../models/movement.model';
+import { uid } from '../utils/id';
 import { ProductsService } from './products.service';
-import { movementSchema } from '../validation/schemas';
-import { parseOrThrow } from '../validation/validate';
+import { DB } from '../data/in-memory-db';
 
 @Injectable({ providedIn: 'root' })
 export class InventoryService {
-  private readonly baseUrl = '/api/movements';
-  private readonly _movements$ = new BehaviorSubject<Movement[]>([]);
+  private readonly _movements$ = new BehaviorSubject<Movement[]>(structuredClone(DB.movements ?? []));
   readonly movements$ = this._movements$.asObservable();
 
-  constructor(
-    private http: HttpClient,
-    private products: ProductsService
-  ) {
-    this.refresh().subscribe();
-  }
+  constructor(private products: ProductsService) {}
 
-  // GET /movements
-  list(): Observable<Movement[]> {
-    return this.http.get<Movement[]>(this.baseUrl);
-  }
+  register(m: Omit<Movement, 'id' | 'createdAt'>) {
+    const movement: Movement = { ...m, id: uid(), createdAt: new Date().toISOString() };
 
-  // POST /movements
-  registerMovement(m: Omit<Movement, 'id' | 'createdAt'>): Observable<Movement> {
-    const payload = parseOrThrow(movementSchema, m);
-    return this.http.post<Movement>(this.baseUrl, payload).pipe(
-      tap(movement => {
-        this._movements$.next([movement, ...this._movements$.value]);
-      }),
-      tap(() => {
-        this.products.refresh().subscribe();
-      })
-    );
-  }
+    const product = this.products.getById(m.productId);
+    if (!product) throw new Error('Produto não encontrado');
 
-  register(m: Omit<Movement, 'id' | 'createdAt'>): Observable<Movement> {
-    return this.registerMovement(m);
-  }
+    let newStock = product.stockCurrent;
 
-  refresh(): Observable<Movement[]> {
-    return this.list().pipe(
-      tap(movements => {
-        this._movements$.next(movements);
-      })
-    );
+    if (m.type === 'IN') newStock += m.qty;
+    if (m.type === 'OUT') newStock -= m.qty;
+    if (m.type === 'ADJUST') newStock = m.qty;
+
+    if (newStock < 0) throw new Error('Estoque não pode ficar negativo');
+
+    this.products.update(product.id, { stockCurrent: newStock });
+    this._movements$.next([movement, ...this._movements$.value]);
+
+    return movement;
   }
 }

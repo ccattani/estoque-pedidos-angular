@@ -36,9 +36,5 @@ export class DashboardComponent {
     this.productsService.products$.subscribe(ps => this.products.set(ps));
     this.ordersService.orders$.subscribe(os => this.orders.set(os));
     this.inventoryService.movements$.subscribe(ms => this.movementsCount.set(ms.length));
-
-    this.productsService.refresh().subscribe();
-    this.ordersService.refresh().subscribe();
-    this.inventoryService.refresh().subscribe();
   }
 }

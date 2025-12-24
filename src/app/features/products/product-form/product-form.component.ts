@@ -33,20 +33,18 @@ export class ProductFormComponent {
 
   constructor() {
     if (this.id) {
-      this.products.getById(this.id).subscribe({
-        next: p => {
-          this.form.patchValue({
-            name: p.name,
-            sku: p.sku,
-            price: p.price,
-            stockCurrent: p.stockCurrent,
-            stockMin: p.stockMin,
-            active: p.active,
-          });
-        },
-        error: () => {
-          this.error = 'Produto não encontrado.';
-        },
+      const p = this.products.getById(this.id);
+      if (!p) {
+        this.error = 'Produto não encontrado.';
+        return;
+      }
+      this.form.patchValue({
+        name: p.name,
+        sku: p.sku,
+        price: p.price,
+        stockCurrent: p.stockCurrent,
+        stockMin: p.stockMin,
+        active: p.active,
       });
     }
   }
@@ -60,17 +58,15 @@ export class ProductFormComponent {
 
     const value = this.form.getRawValue();
 
-    const request = this.id
-      ? this.products.update(this.id, value)
-      : this.products.create(value);
-
-    request.subscribe({
-      next: () => {
-        this.router.navigateByUrl('/products');
-      },
-      error: (e: any) => {
-        this.error = e?.message ?? 'Erro ao salvar.';
-      },
-    });
+    try {
+      if (!this.id) {
+        this.products.create(value);
+      } else {
+        this.products.update(this.id, value);
+      }
+      this.router.navigateByUrl('/products');
+    } catch (e: any) {
+      this.error = e?.message ?? 'Erro ao salvar.';
+    }
   }
 }
