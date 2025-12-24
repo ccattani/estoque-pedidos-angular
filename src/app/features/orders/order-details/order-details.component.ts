@@ -17,7 +17,7 @@ import { Produto } from "../../../core/models/produto.model";
 export class OrderDetailsComponent {
   private route = inject(ActivatedRoute);
   private orders = inject(OrdersService);
-  private products = inject(ProductsService);
+  private productsService = inject(ProductsService);
   private toast = inject(ToastService);
   private router = inject(Router);
 
@@ -33,8 +33,8 @@ export class OrderDetailsComponent {
   });
 
   constructor() {
-    this.products.products$.subscribe(ps => this.products.set(ps));
-    this.products.refresh().subscribe();
+    this.productsService.products$.subscribe(ps => this.products.set(ps));
+    this.productsService.refresh().subscribe();
 
     this.orders.getById(this.id).subscribe({
       next: order => {
