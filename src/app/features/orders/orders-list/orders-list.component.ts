@@ -16,6 +16,7 @@ export class OrdersListComponent {
 
   constructor(private ordersService: OrdersService) {
     this.ordersService.orders$.subscribe(os => this.orders.set(os));
+    this.ordersService.refresh().subscribe();
   }
 
   badgeClass(status: Order['status']) {
