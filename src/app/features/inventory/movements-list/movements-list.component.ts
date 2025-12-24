@@ -83,7 +83,7 @@ export class MovementsListComponent {
     }
 
     try {
-      this.inventory.register({
+      this.inventory.registerMovement({
         productId: v.productId,
         type: v.type,
         qty: Number(v.qty),

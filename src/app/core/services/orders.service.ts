@@ -4,10 +4,12 @@ import { Order, OrderItem, OrderStatus } from '../models/pedido.model';
 import { uid } from '../utils/id';
 import { ProductsService } from './products.service';
 import { InventoryService } from './inventory.service';
+import { DB } from '../data/in-memory-db';
+import { withTransaction } from '../utils/transaction';
 
 @Injectable({ providedIn: 'root' })
 export class OrdersService {
-  private readonly _orders$ = new BehaviorSubject<Order[]>([]);
+  private readonly _orders$ = new BehaviorSubject<Order[]>(structuredClone(DB.orders ?? []));
   readonly orders$ = this._orders$.asObservable();
 
   constructor(
@@ -44,35 +46,61 @@ export class OrdersService {
       createdAt: new Date().toISOString(),
     };
 
-    this._orders$.next([order, ...this.snapshot]);
-    return order;
+    return withTransaction(
+      () => ({ orders: structuredClone(this.snapshot) }),
+      snapshot => {
+        this._orders$.next(snapshot.orders);
+      },
+      () => {
+        this._orders$.next([order, ...this.snapshot]);
+        return order;
+      }
+    );
+  }
+
+  confirm(id: string) {
+    return this.setStatus(id, 'CONFIRMED');
   }
 
   setStatus(id: string, status: OrderStatus) {
-    const order = this.getById(id);
-    if (!order) throw new Error('Pedido não encontrado');
+    return withTransaction(
+      () => ({
+        orders: structuredClone(this.snapshot),
+        products: structuredClone(this.products.snapshot),
+        movements: structuredClone(this.inventory.snapshot),
+      }),
+      snapshot => {
+        this._orders$.next(snapshot.orders);
+        this.products.restore(snapshot.products);
+        this.inventory.restore(snapshot.movements);
+      },
+      () => {
+        const order = this.getById(id);
+        if (!order) throw new Error('Pedido não encontrado');
 
-    // regra: confirmar dá baixa no estoque
-    if (order.status !== 'CONFIRMED' && status === 'CONFIRMED') {
-      // valida estoque antes
-      for (const it of order.items) {
-        const p = this.products.getById(it.productId);
-        if (!p) throw new Error('Produto inválido');
-        if (p.stockCurrent < it.qty) throw new Error(`Estoque insuficiente: ${p.name}`);
+        // regra: confirmar dá baixa no estoque
+        if (order.status !== 'CONFIRMED' && status === 'CONFIRMED') {
+          // valida estoque antes
+          for (const it of order.items) {
+            const p = this.products.getById(it.productId);
+            if (!p) throw new Error('Produto inválido');
+            if (p.stockCurrent < it.qty) throw new Error(`Estoque insuficiente: ${p.name}`);
+          }
+
+          // baixa
+          for (const it of order.items) {
+            this.inventory.registerMovement({
+              productId: it.productId,
+              type: 'OUT',
+              qty: it.qty,
+              reason: `Baixa por confirmação do pedido ${order.number}`,
+            });
+          }
+        }
+
+        const next = this.snapshot.map(o => (o.id === id ? { ...o, status } : o));
+        this._orders$.next(next);
       }
-
-      // baixa
-      for (const it of order.items) {
-        this.inventory.register({
-          productId: it.productId,
-          type: 'OUT',
-          qty: it.qty,
-          reason: `Baixa por confirmação do pedido ${order.number}`,
-        });
-      }
-    }
-
-    const next = this.snapshot.map(o => (o.id === id ? { ...o, status } : o));
-    this._orders$.next(next);
+    );
   }
 }
