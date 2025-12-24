@@ -1,0 +1,93 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <h1>Movimentações</h1>
+      <p class="subtitle">Entradas, saídas e ajustes de estoque</p>
+    </div>
+
+    <button class="btn-primary" (click)="open()" [disabled]="products().length === 0">
+      Nova movimentação
+    </button>
+  </header>
+
+  <p class="warn" *ngIf="products().length === 0">
+    Você precisa cadastrar produtos antes de registrar movimentações.
+  </p>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Data</th>
+        <th>Produto</th>
+        <th>Tipo</th>
+        <th>Qtd</th>
+        <th>Motivo</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr *ngIf="movements().length === 0">
+        <td colspan="5" style="opacity:.7;">Nenhuma movimentação registrada.</td>
+      </tr>
+
+      <tr *ngFor="let m of movements()">
+        <td>{{ m.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
+        <td>{{ productsMap().get(m.productId)?.name ?? m.productId }}</td>
+        <td>
+          <span class="badge" [ngClass]="badgeClass(m.type)">{{ m.type }}</span>
+        </td>
+        <td>{{ m.qty }}</td>
+        <td class="reason">{{ m.reason }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- overlay -->
+  <div class="overlay" *ngIf="showForm()" (click)="close()"></div>
+
+  <!-- painel -->
+  <aside class="panel" *ngIf="showForm()">
+    <header class="panel-header">
+      <h2>Nova movimentação</h2>
+      <button class="x" type="button" (click)="close()">×</button>
+    </header>
+
+    <form class="panel-body" [formGroup]="form" (ngSubmit)="submit()">
+      <label>
+        <span>Produto</span>
+        <select formControlName="productId">
+          <option *ngFor="let p of products()" [value]="p.id">
+            {{ p.name }} (Atual: {{ p.stockCurrent }})
+          </option>
+        </select>
+      </label>
+
+      <label>
+        <span>Tipo</span>
+        <select formControlName="type">
+          <option value="IN">IN (Entrada)</option>
+          <option value="OUT">OUT (Saída)</option>
+          <option value="ADJUST">ADJUST (Ajuste)</option>
+        </select>
+      </label>
+
+      <label>
+        <span>Quantidade</span>
+        <input type="number" formControlName="qty" min="0" />
+        <small class="hint">
+          IN/OUT: quantidade movimentada. ADJUST: novo estoque do produto.
+        </small>
+      </label>
+
+      <label>
+        <span>Motivo</span>
+        <input formControlName="reason" placeholder="Ex: Inventário, compra, perda, devolução..." />
+      </label>
+
+      <footer class="panel-actions">
+        <button class="btn-secondary" type="button" (click)="close()">Cancelar</button>
+        <button class="btn-primary" type="submit">Salvar</button>
+      </footer>
+    </form>
+  </aside>
+</section>

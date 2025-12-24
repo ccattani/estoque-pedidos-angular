@@ -1,0 +1,17 @@
+.page { display: flex; flex-direction: column; gap: 16px; }
+.page-header { display: flex; justify-content: space-between; align-items: center; }
+.subtitle { opacity: .7; margin-top: 4px; }
+
+.card { border: 1px solid #e7e7e7; border-radius: 14px; padding: 16px; }
+
+.table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+th, td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
+th { font-size: 13px; opacity: .7; font-weight: 600; }
+
+.total { display: flex; justify-content: space-between; padding-top: 10px; border-top: 1px solid #eee; margin-top: 10px; }
+.actions { margin-top: 12px; display: flex; justify-content: flex-end; }
+
+.btn-primary { padding: 10px 14px; border-radius: 10px; border: none; background: #111; color: #fff; cursor: pointer; }
+.btn-secondary { padding: 10px 14px; border-radius: 10px; border: 1px solid #ddd; text-decoration: none; color: #111; }
+
+.error { color: #b00020; font-weight: 700; }

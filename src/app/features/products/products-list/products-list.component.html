@@ -1,0 +1,64 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <h1>Produtos</h1>
+      <p class="subtitle">Gestão de produtos e estoque</p>
+    </div>
+
+    <button class="btn-primary" routerLink="/products/new">Novo produto</button>
+  </header>
+
+  <section class="filters">
+    <input
+      type="text"
+      placeholder="Buscar por nome ou SKU"
+      [value]="q()"
+      (input)="q.set(($any($event.target).value || ''))"
+    />
+
+    <select [value]="status()" (change)="status.set($any($event.target).value)">
+      <option value="all">Status</option>
+      <option value="active">Ativos</option>
+      <option value="inactive">Inativos</option>
+    </select>
+  </section>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Produto</th>
+        <th>SKU</th>
+        <th>Estoque</th>
+        <th>Mínimo</th>
+        <th>Status</th>
+        <th class="actions">Ações</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr *ngIf="filtered().length === 0">
+        <td colspan="6" style="opacity: 0.7;">Nenhum produto encontrado.</td>
+      </tr>
+
+      <tr *ngFor="let p of filtered()" [class.low-stock]="isLowStock(p)">
+        <td>{{ p.name }}</td>
+        <td>{{ p.sku }}</td>
+        <td>{{ p.stockCurrent }}</td>
+        <td>{{ p.stockMin }}</td>
+        <td>
+          <span class="badge" [class.active]="p.active">
+            {{ p.active ? 'Ativo' : 'Inativo' }}
+          </span>
+        </td>
+        <td class="actions">
+          <button class="btn-link" [routerLink]="['/products', p.id]">
+            Editar
+          </button>
+          <button class="btn-link danger" (click)="remove(p.id)">
+            Excluir
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</section>

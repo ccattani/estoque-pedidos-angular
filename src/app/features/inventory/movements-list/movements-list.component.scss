@@ -1,0 +1,114 @@
+.page { display: flex; flex-direction: column; gap: 16px; }
+.page-header { display: flex; justify-content: space-between; align-items: center; }
+.subtitle { opacity: .7; margin-top: 4px; }
+
+.warn {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #ffe0b2;
+  background: #fff8e1;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th, td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; vertical-align: top; }
+  th { font-size: 13px; opacity: .7; font-weight: 600; }
+  .reason { max-width: 520px; }
+}
+
+.btn-primary {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: none;
+  background: #111;
+  color: #fff;
+  cursor: pointer;
+}
+
+.btn-secondary {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  background: #fff;
+  cursor: pointer;
+}
+
+.badge {
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  background: #f2f2f2;
+}
+
+.badge.in { background: #e8f5e9; }
+.badge.out { background: #ffebee; }
+.badge.adjust { background: #e3f2fd; }
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.25);
+  z-index: 50;
+}
+
+.panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 420px;
+  height: 100vh;
+  background: #fff;
+  border-left: 1px solid #eee;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-header {
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #eee;
+}
+
+.x {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 22px;
+  opacity: .6;
+}
+
+.panel-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  span { font-size: 13px; opacity: .8; }
+
+  input, select {
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+  }
+}
+
+.hint { font-size: 12px; opacity: .7; }
+
+.panel-actions {
+  margin-top: 8px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}

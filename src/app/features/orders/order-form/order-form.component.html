@@ -1,0 +1,50 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <h1>Novo pedido</h1>
+      <p class="subtitle">Crie um pedido em modo DRAFT</p>
+    </div>
+
+    <a class="btn-secondary" routerLink="/orders">Voltar</a>
+  </header>
+
+  <p class="error" *ngIf="error()">{{ error() }}</p>
+
+  <form class="card" [formGroup]="form" (ngSubmit)="saveDraft()">
+    <label class="field">
+      <span>Cliente</span>
+      <input formControlName="customerName" placeholder="Nome do cliente" />
+    </label>
+
+    <h2 class="section-title">Itens</h2>
+
+    <div formArrayName="items" class="items">
+      <div class="item-row" *ngFor="let g of items.controls; let i = index" [formGroupName]="i">
+        <select formControlName="productId" (change)="onProductChange(i)">
+          <option *ngFor="let p of products()" [value]="p.id">
+            {{ p.name }} (Estoque: {{ p.stockCurrent }})
+          </option>
+        </select>
+
+        <input type="number" formControlName="qty" min="1" />
+
+        <input type="number" formControlName="unitPrice" step="0.01" />
+
+        <button type="button" class="btn-link danger" (click)="removeItem(i)" [disabled]="items.length === 1">
+          Remover
+        </button>
+      </div>
+    </div>
+
+    <button type="button" class="btn-secondary" (click)="addItem()">+ Adicionar item</button>
+
+    <div class="total">
+      <span>Total</span>
+      <strong>R$ {{ total().toFixed(2) }}</strong>
+    </div>
+
+    <footer class="actions">
+      <button class="btn-primary" type="submit">Salvar como DRAFT</button>
+    </footer>
+  </form>
+</section>

@@ -1,0 +1,46 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <h1>Pedidos</h1>
+      <p class="subtitle">Crie e acompanhe pedidos</p>
+    </div>
+
+    <button class="btn-primary" routerLink="/orders/new">
+      Novo pedido
+    </button>
+  </header>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Nº</th>
+        <th>Cliente</th>
+        <th>Status</th>
+        <th>Total</th>
+        <th>Data</th>
+        <th class="actions">Ações</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr *ngIf="orders().length === 0">
+        <td colspan="6" style="opacity:.7;">Nenhum pedido criado.</td>
+      </tr>
+
+      <tr *ngFor="let o of orders()">
+        <td>{{ o.number }}</td>
+        <td>{{ o.customerName }}</td>
+        <td>
+          <span class="badge" [ngClass]="badgeClass(o.status)">
+            {{ o.status }}
+          </span>
+        </td>
+        <td>R$ {{ o.total.toFixed(2) }}</td>
+        <td>{{ o.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
+        <td class="actions">
+          <a class="btn-link" [routerLink]="['/orders', o.id]">Detalhes</a>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</section>

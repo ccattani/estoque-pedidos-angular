@@ -1,0 +1,61 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <h1>{{ isEdit() ? 'Editar produto' : 'Novo produto' }}</h1>
+      <p class="subtitle">Preencha os dados do produto</p>
+    </div>
+
+    <a class="btn-secondary" routerLink="/products">Voltar</a>
+  </header>
+
+  <p class="error" *ngIf="error">{{ error }}</p>
+
+  <form class="card" [formGroup]="form" (ngSubmit)="save()">
+    <div class="grid">
+      <label>
+        <span>Nome</span>
+        <input formControlName="name" placeholder="Ex: Teclado Mecânico" />
+        <small class="hint" *ngIf="form.controls.name.touched && form.controls.name.invalid">
+          Nome obrigatório (mín. 2 caracteres)
+        </small>
+      </label>
+
+      <label>
+        <span>SKU</span>
+        <input formControlName="sku" placeholder="Ex: TEC-001" />
+        <small class="hint" *ngIf="form.controls.sku.touched && form.controls.sku.invalid">
+          SKU obrigatório (mín. 3 caracteres)
+        </small>
+      </label>
+
+      <label>
+        <span>Preço (R$)</span>
+        <input type="number" formControlName="price" step="0.01" />
+        <small class="hint" *ngIf="form.controls.price.touched && form.controls.price.invalid">
+          Preço deve ser maior que 0
+        </small>
+      </label>
+
+      <label>
+        <span>Estoque atual</span>
+        <input type="number" formControlName="stockCurrent" />
+      </label>
+
+      <label>
+        <span>Estoque mínimo</span>
+        <input type="number" formControlName="stockMin" />
+      </label>
+
+      <label class="toggle">
+        <input type="checkbox" formControlName="active" />
+        <span>Ativo</span>
+      </label>
+    </div>
+
+    <footer class="actions">
+      <button class="btn-primary" type="submit">
+        {{ isEdit() ? 'Salvar alterações' : 'Criar produto' }}
+      </button>
+    </footer>
+  </form>
+</section>

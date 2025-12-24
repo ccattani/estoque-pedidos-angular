@@ -1,0 +1,43 @@
+.page { display: flex; flex-direction: column; gap: 16px; }
+.page-header { display: flex; justify-content: space-between; align-items: center; }
+.subtitle { opacity: .7; margin-top: 4px; }
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th, td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
+  th { font-size: 13px; opacity: .7; font-weight: 600; }
+}
+
+.actions { width: 120px; }
+
+.btn-primary {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: none;
+  background: #111;
+  color: #fff;
+  cursor: pointer;
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #111;
+  text-decoration: none;
+}
+
+.badge {
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  background: #f2f2f2;
+}
+
+.badge.draft { background: #fff8e1; }
+.badge.confirmed { background: #e8f5e9; }
+.badge.shipped { background: #e3f2fd; }
+.badge.canceled { background: #ffebee; }

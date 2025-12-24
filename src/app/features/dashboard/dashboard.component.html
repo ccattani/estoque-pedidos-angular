@@ -1,0 +1,49 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <h1>Dashboard</h1>
+      <p class="subtitle">Visão geral do sistema</p>
+    </div>
+  </header>
+
+  <section class="kpis">
+    <div class="kpi">
+      <div class="label">Produtos</div>
+      <div class="value">{{ totalProducts() }}</div>
+    </div>
+
+    <div class="kpi">
+      <div class="label">Estoque baixo</div>
+      <div class="value">{{ lowStockCount() }}</div>
+    </div>
+
+    <div class="kpi">
+      <div class="label">Pedidos</div>
+      <div class="value">{{ ordersTotal() }}</div>
+      <div class="meta">
+        <span>DRAFT: {{ ordersDraft() }}</span>
+        <span>CONFIRMED: {{ ordersConfirmed() }}</span>
+      </div>
+    </div>
+
+    <div class="kpi">
+      <div class="label">Movimentações</div>
+      <div class="value">{{ movementsCount() }}</div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Alertas</h2>
+
+    <p class="empty" *ngIf="lowStockCount() === 0">Nenhum alerta de estoque baixo.</p>
+
+    <ul class="alerts" *ngIf="lowStockCount() > 0">
+      <li *ngFor="let p of lowStock()">
+        <div class="title">{{ p.name }}</div>
+        <div class="desc">
+          Estoque atual <strong>{{ p.stockCurrent }}</strong> · mínimo <strong>{{ p.stockMin }}</strong>
+        </div>
+      </li>
+    </ul>
+  </section>
+</section>

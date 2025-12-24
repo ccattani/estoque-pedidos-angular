@@ -1,0 +1,48 @@
+.page { display: flex; flex-direction: column; gap: 16px; }
+.page-header { display: flex; justify-content: space-between; align-items: center; }
+.subtitle { opacity: .7; margin-top: 4px; }
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.kpi {
+  border: 1px solid #e7e7e7;
+  border-radius: 14px;
+  padding: 14px;
+
+  .label { opacity: .7; font-size: 13px; }
+  .value { font-size: 28px; font-weight: 800; margin-top: 4px; }
+  .meta { margin-top: 6px; display: flex; gap: 10px; opacity: .8; font-size: 12px; }
+}
+
+.panel {
+  border: 1px solid #e7e7e7;
+  border-radius: 14px;
+  padding: 14px;
+
+  h2 { margin: 0 0 10px; }
+}
+
+.empty { opacity: .7; }
+
+.alerts {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  li {
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid #ffe0e0;
+    background: #fff6f6;
+  }
+
+  .title { font-weight: 800; }
+  .desc { opacity: .85; margin-top: 2px; font-size: 13px; }
+}

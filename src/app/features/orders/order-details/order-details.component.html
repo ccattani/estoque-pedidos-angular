@@ -1,0 +1,50 @@
+<section class="page" *ngIf="order() as o; else notFound">
+  <header class="page-header">
+    <div>
+      <h1>{{ o.number }}</h1>
+      <p class="subtitle">Cliente: {{ o.customerName }} · Status: <strong>{{ o.status }}</strong></p>
+    </div>
+
+    <a class="btn-secondary" routerLink="/orders">Voltar</a>
+  </header>
+
+  <p class="error" *ngIf="error">{{ error }}</p>
+
+  <div class="card">
+    <h2>Itens</h2>
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Produto</th>
+          <th>Qtd</th>
+          <th>Preço</th>
+          <th>Subtotal</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let it of o.items">
+          <td>{{ productsMap().get(it.productId) ?? it.productId }}</td>
+          <td>{{ it.qty }}</td>
+          <td>R$ {{ it.unitPrice.toFixed(2) }}</td>
+          <td>R$ {{ (it.qty * it.unitPrice).toFixed(2) }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="total">
+      <span>Total</span>
+      <strong>R$ {{ o.total.toFixed(2) }}</strong>
+    </div>
+
+    <div class="actions">
+      <button class="btn-primary" (click)="confirm()" [disabled]="o.status !== 'DRAFT'">
+        Confirmar pedido (baixa estoque)
+      </button>
+    </div>
+  </div>
+</section>
+
+<ng-template #notFound>
+  <p>Pedido não encontrado.</p>
+</ng-template>

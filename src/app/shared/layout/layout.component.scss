@@ -1,0 +1,35 @@
+.app-shell {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  min-height: 100vh;
+}
+
+.sidebar {
+  padding: 20px;
+  border-right: 1px solid #e7e7e7;
+}
+
+.brand {
+  margin-bottom: 24px;
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  a {
+    padding: 10px 12px;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #111;
+
+    &.active {
+      border: 1px solid #111;
+    }
+  }
+}
+
+.content {
+  padding: 24px;
+}
