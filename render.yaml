@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: estoque-pedidos-server
+    env: node
+    plan: free
+    rootDir: server
+    buildCommand: npm install && npm run build && npx prisma generate --schema src/db/schema.prisma
+    startCommand: npm run start
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase: estoque-pedidos-db
+      - key: NODE_ENV
+        value: production
+
+databases:
+  - name: estoque-pedidos-db
+    plan: free
+    databaseName: estoque_pedidos
+    user: estoque_pedidos
