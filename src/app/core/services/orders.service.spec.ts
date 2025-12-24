@@ -23,7 +23,7 @@ describe('OrdersService', () => {
       items: [{ productId: p.id, qty: 2 }],
     });
 
-    orders.setStatus(order.id, 'CONFIRMED');
+    orders.confirm(order.id);
 
     const afterStock = products.getById(p.id)!.stockCurrent;
     expect(afterStock).toBe(beforeStock - 2);
@@ -43,7 +43,7 @@ describe('OrdersService', () => {
       items: [{ productId: p.id, qty: 2 }],
     });
 
-    expect(() => orders.setStatus(order.id, 'CONFIRMED')).toThrow();
+    expect(() => orders.confirm(order.id)).toThrow();
 
     const afterStock = products.getById(p.id)!.stockCurrent;
     expect(afterStock).toBe(beforeStock);

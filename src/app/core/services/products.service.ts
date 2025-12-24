@@ -16,6 +16,10 @@ export class ProductsService {
     return this._products$.value;
   }
 
+  restore(products: Produto[]) {
+    this._products$.next(structuredClone(products));
+  }
+
   // GET /products
   list(): Produto[] {
     return this.snapshot;

@@ -6,7 +6,9 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "db:migrate": "sqlite3 database/app.sqlite < database/migrations/001_create_tables.sql",
+    "db:seed": "sqlite3 database/app.sqlite < database/seed.sql"
   },
   "private": true,
   "dependencies": {
