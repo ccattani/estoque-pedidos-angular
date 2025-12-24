@@ -13,6 +13,10 @@ export class ProductsService {
     return this._products$.value;
   }
 
+  restore(products: Produto[]) {
+    this._products$.next(structuredClone(products));
+  }
+
   getById(id: string): Produto | undefined {
     return this.snapshot.find(p => p.id === id);
   }

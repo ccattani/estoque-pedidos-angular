@@ -33,7 +33,7 @@ export class OrderDetailsComponent {
   confirm() {
     this.error = "";
     try {
-      this.orders.setStatus(this.id, "CONFIRMED");
+      this.orders.confirm(this.id);
       this.toast.show(
         "Pedido confirmado. Estoque baixado com sucesso.",
         "success"
