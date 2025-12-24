@@ -1,60 +1,72 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
-import { DB } from '../data/in-memory-db';
-import { uid } from '../utils/id';
+import { HttpClient } from '@angular/common/http';
+import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { Produto } from '../models/produto.model';
-import { ApiError } from '../errors/api-error';
 import { productCreateSchema, productUpdateSchema } from '../validation/schemas';
 import { parseOrThrow } from '../validation/validate';
 
 @Injectable({ providedIn: 'root' })
 export class ProductsService {
-  private readonly _products$ = new BehaviorSubject<Produto[]>(structuredClone(DB.products));
+  private readonly baseUrl = '/api/products';
+  private readonly _products$ = new BehaviorSubject<Produto[]>([]);
   readonly products$ = this._products$.asObservable();
+
+  constructor(private http: HttpClient) {
+    this.refresh().subscribe();
+  }
 
   get snapshot(): Produto[] {
     return this._products$.value;
   }
 
-  restore(products: Produto[]) {
-    this._products$.next(structuredClone(products));
-  }
-
   // GET /products
-  list(): Produto[] {
-    return this.snapshot;
+  list(): Observable<Produto[]> {
+    return this.http.get<Produto[]>(this.baseUrl);
   }
 
   // GET /products/:id
-  getById(id: string): Produto | undefined {
-    return this.snapshot.find(p => p.id === id);
-  }
-
-  getByIdOrThrow(id: string): Produto {
-    const product = this.getById(id);
-    if (!product) throw new ApiError('NOT_FOUND', 'Produto não encontrado');
-    return product;
+  getById(id: string): Observable<Produto> {
+    return this.http.get<Produto>(`${this.baseUrl}/${id}`);
   }
 
   // POST /products
-  create(input: Omit<Produto, 'id' | 'createdAt'>) {
+  create(input: Omit<Produto, 'id' | 'createdAt'>): Observable<Produto> {
     const payload = parseOrThrow(productCreateSchema, input);
-    const product: Produto = { ...payload, id: uid(), createdAt: new Date().toISOString() };
-    this._products$.next([product, ...this.snapshot]);
-    return product;
+    return this.http.post<Produto>(this.baseUrl, payload).pipe(
+      tap(product => {
+        this._products$.next([product, ...this.snapshot]);
+      })
+    );
   }
 
   // PUT /products/:id
-  update(id: string, patch: Partial<Omit<Produto, 'id' | 'createdAt'>>) {
-    this.getByIdOrThrow(id);
+  update(
+    id: string,
+    patch: Partial<Omit<Produto, 'id' | 'createdAt'>>
+  ): Observable<Produto> {
     const payload = parseOrThrow(productUpdateSchema, patch);
-    const next = this.snapshot.map(p => (p.id === id ? { ...p, ...payload } : p));
-    this._products$.next(next);
+    return this.http.put<Produto>(`${this.baseUrl}/${id}`, payload).pipe(
+      tap(product => {
+        const next = this.snapshot.map(p => (p.id === id ? product : p));
+        this._products$.next(next);
+      })
+    );
   }
 
   // DELETE /products/:id
-  remove(id: string) {
-    this.getByIdOrThrow(id);
-    this._products$.next(this.snapshot.filter(p => p.id !== id));
+  remove(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/${id}`).pipe(
+      tap(() => {
+        this._products$.next(this.snapshot.filter(p => p.id !== id));
+      })
+    );
+  }
+
+  refresh(): Observable<Produto[]> {
+    return this.list().pipe(
+      tap(products => {
+        this._products$.next(products);
+      })
+    );
   }
 }

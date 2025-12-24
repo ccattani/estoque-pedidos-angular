@@ -19,7 +19,7 @@ export class OrderFormComponent {
   private productsService = inject(ProductsService);
   private ordersService = inject(OrdersService);
 
-  products = signal<Produto[]>(this.productsService.snapshot);
+  products = signal<Produto[]>([]);
   error = signal('');
 
   form = this.fb.nonNullable.group({
@@ -43,6 +43,7 @@ export class OrderFormComponent {
 
   constructor() {
     this.productsService.products$.subscribe(ps => this.products.set(ps));
+    this.productsService.refresh().subscribe();
     this.addItem(); // começa com 1 linha
   }
 
@@ -78,14 +79,18 @@ export class OrderFormComponent {
 
     const v = this.form.getRawValue();
 
-    try {
-      const order = this.ordersService.createDraft({
+    this.ordersService
+      .createDraft({
         customerName: v.customerName,
         items: v.items.map((it: any) => ({ productId: it.productId, qty: Number(it.qty) })),
+      })
+      .subscribe({
+        next: order => {
+          this.router.navigate(['/orders', order.id]);
+        },
+        error: (e: any) => {
+          this.error.set(e?.message ?? 'Erro ao criar pedido.');
+        },
       });
-      this.router.navigate(['/orders', order.id]);
-    } catch (e: any) {
-      this.error.set(e?.message ?? 'Erro ao criar pedido.');
-    }
   }
 }

@@ -1,54 +1,82 @@
 import { TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { OrdersService } from './orders.service';
-import { ProductsService } from './products.service';
 
 describe('OrdersService', () => {
   let orders: OrdersService;
-  let products: ProductsService;
+  let httpMock: HttpTestingController;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule],
+    });
     orders = TestBed.inject(OrdersService);
-    products = TestBed.inject(ProductsService);
+    httpMock = TestBed.inject(HttpTestingController);
+    const initReq = httpMock.expectOne('/api/orders');
+    initReq.flush([]);
   });
 
-  it('should confirm an order and decrease stock', () => {
-    const p = products.snapshot[0];
-    products.update(p.id, { stockCurrent: 10 }); // garante estoque conhecido
+  afterEach(() => {
+    httpMock.verify();
+  });
 
-    const beforeStock = products.getById(p.id)!.stockCurrent;
-
-    const order = orders.createDraft({
+  it('should create a draft order via API', () => {
+    const payload = {
+      id: 'o1',
+      number: 'PED-00001',
       customerName: 'Cliente A',
-      items: [{ productId: p.id, qty: 2 }],
-    });
+      status: 'DRAFT',
+      items: [{ productId: 'p1', qty: 2, unitPrice: 10 }],
+      total: 20,
+      createdAt: new Date().toISOString(),
+    };
 
-    orders.confirm(order.id);
+    orders
+      .createDraft({
+        customerName: 'Cliente A',
+        items: [{ productId: 'p1', qty: 2 }],
+      })
+      .subscribe(order => {
+        expect(order.id).toBe('o1');
+      });
 
-    const afterStock = products.getById(p.id)!.stockCurrent;
-    expect(afterStock).toBe(beforeStock - 2);
-
-    const updatedOrder = orders.getById(order.id)!;
-    expect(updatedOrder.status).toBe('CONFIRMED');
+    const req = httpMock.expectOne('/api/orders');
+    expect(req.request.method).toBe('POST');
+    req.flush(payload);
+    expect(orders.snapshot.length).toBe(1);
   });
 
-  it('should throw when stock is insufficient and NOT change stock/status', () => {
-    const p = products.snapshot[0];
-    products.update(p.id, { stockCurrent: 1 }); // estoque insuficiente
+  it('should confirm an order via API', () => {
+    orders.refresh().subscribe();
+    const refreshReq = httpMock.expectOne('/api/orders');
+    refreshReq.flush([
+      {
+        id: 'o1',
+        number: 'PED-00001',
+        customerName: 'Cliente A',
+        status: 'DRAFT',
+        items: [{ productId: 'p1', qty: 2, unitPrice: 10 }],
+        total: 20,
+        createdAt: new Date().toISOString(),
+      },
+    ]);
 
-    const beforeStock = products.getById(p.id)!.stockCurrent;
-
-    const order = orders.createDraft({
-      customerName: 'Cliente B',
-      items: [{ productId: p.id, qty: 2 }],
+    orders.confirm('o1').subscribe(order => {
+      expect(order.status).toBe('CONFIRMED');
     });
 
-    expect(() => orders.confirm(order.id)).toThrow();
+    const req = httpMock.expectOne('/api/orders/o1/confirm');
+    expect(req.request.method).toBe('POST');
+    req.flush({
+      id: 'o1',
+      number: 'PED-00001',
+      customerName: 'Cliente A',
+      status: 'CONFIRMED',
+      items: [{ productId: 'p1', qty: 2, unitPrice: 10 }],
+      total: 20,
+      createdAt: new Date().toISOString(),
+    });
 
-    const afterStock = products.getById(p.id)!.stockCurrent;
-    expect(afterStock).toBe(beforeStock);
-
-    const updatedOrder = orders.getById(order.id)!;
-    expect(updatedOrder.status).toBe('DRAFT'); // não pode confirmar
+    expect(orders.snapshot[0].status).toBe('CONFIRMED');
   });
 });
