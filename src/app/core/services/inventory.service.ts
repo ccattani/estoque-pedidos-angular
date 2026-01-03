@@ -12,17 +12,17 @@ export class InventoryService {
 
   constructor(private products: ProductsService) {}
 
-  register(m: Omit<Movement, 'id' | 'createdAt'>) {
-    const movement: Movement = { ...m, id: uid(), createdAt: new Date().toISOString() };
+  register(dadosMovimento: Omit<Movement, 'id' | 'createdAt'>) {
+    const movement: Movement = { ...dadosMovimento, id: uid(), createdAt: new Date().toISOString() };
 
-    const product = this.products.getById(m.productId);
+    const product = this.products.getById(dadosMovimento.productId);
     if (!product) throw new Error('Produto não encontrado');
 
     let newStock = product.stockCurrent;
 
-    if (m.type === 'IN') newStock += m.qty;
-    if (m.type === 'OUT') newStock -= m.qty;
-    if (m.type === 'ADJUST') newStock = m.qty;
+    if (dadosMovimento.type === 'IN') newStock += dadosMovimento.qty;
+    if (dadosMovimento.type === 'OUT') newStock -= dadosMovimento.qty;
+    if (dadosMovimento.type === 'ADJUST') newStock = dadosMovimento.qty;
 
     if (newStock < 0) throw new Error('Estoque não pode ficar negativo');
 
